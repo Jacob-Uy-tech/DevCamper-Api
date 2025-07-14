@@ -1,7 +1,7 @@
 const HandleError = require("../Utilis/error");
 
 const errorHandler = function (err, req, res, next) {
-  console.log("ERRORS:", err.name);
+  console.log("ERRORS:", err.name, err);
   let error;
   //   Mongoose bad id
   if (err.name === "CastError") {
