@@ -85,3 +85,27 @@ exports.deleteBootCamp = asyncWrapper(async function (req, res, next) {
     data: null,
   });
 });
+
+exports.getBootcampsInRadius = asyncWrapper(async (req, res, next) => {
+  const { zipcode, distance } = req.params;
+
+  // Get lat/lng from geocoder
+  const loc = await geocoder.geocode(zipcode);
+  const lat = loc[0].latitude;
+  const lng = loc[0].longitude;
+
+  // Calc radius using radians
+  // Divide dist by radius of Earth
+  // Earth Radius = 3,963 mi / 6,378 km
+  const radius = distance / 3963;
+
+  const bootcamps = await Bootcamp.find({
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    success: true,
+    count: bootcamps.length,
+    data: bootcamps,
+  });
+});
