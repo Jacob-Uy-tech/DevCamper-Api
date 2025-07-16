@@ -7,10 +7,40 @@ const asyncWrapper = require("../middlewares/asyncHandler");
 //@access Public
 
 exports.getAllBootCamps = asyncWrapper(async function (req, res, next) {
-  const bootcamp = await Bootcamp.find();
-  if (!bootcamp) {
-    return next(new HandleError("Bootcamps not found", 400));
+  let query;
+  const queryObj = { ...req.query };
+  const removeField = ["sort", "select", "page", "limit"];
+  removeField.forEach((el) => delete queryObj[el]);
+  let queryStr = JSON.stringify(queryObj);
+
+  queryStr = queryStr.replace(
+    /\b(gt|gte|lt|lte|in)\b/g,
+    (match) => `$${match}`
+  );
+
+  query = Bootcamp.find(JSON.parse(queryStr));
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    query = query.sort(sortBy);
+    // console.log(sortBy);
+  } else {
+    query = query.sort("-createdAt");
   }
+
+  if (req.query.select) {
+    const selectBy = req.query.select.split(",").join("  ");
+    query = query.select(selectBy);
+    console.log(selectBy);
+  }
+
+  const page = Math.abs(req.query.page) || 1;
+  const limit = Math.abs(req.query.limit) || 100;
+  const skip = (page - 1) * limit;
+  console.log(page, limit, skip);
+
+  query = query.skip(skip).limit(limit);
+
+  const bootcamp = await query;
 
   res.status(200).json({
     status: "Success",
