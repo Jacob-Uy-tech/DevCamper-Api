@@ -1,6 +1,8 @@
+const path = require("path");
 const Bootcamp = require("../models/bootcampModel");
 const HandleError = require("./../Utilis/error");
 const asyncWrapper = require("../middlewares/asyncHandler");
+const { console } = require("inspector");
 
 //@desc Get all bootcamps
 //@route Get /api/v1/bootcamps
@@ -39,7 +41,7 @@ exports.getAllBootCamps = asyncWrapper(async function (req, res, next) {
   const endIndex = page * limit;
   const total = await Bootcamp.countDocuments();
 
-  query = query.skip(startIndex).limit(limit);
+  query = query.skip(startIndex).limit(limit).populate("course");
 
   const bootcamp = await query;
 
@@ -119,7 +121,7 @@ exports.createBootCamp = asyncWrapper(async function (req, res, next) {
 exports.deleteBootCamp = asyncWrapper(async function (req, res, next) {
   const bootCamp = await Bootcamp.findByIdAndDelete(req.params.id);
   if (!bootCamp) {
-    return next(new HandleError("Bootcamp not deleted, try again", 400));
+    return next(new HandleError("Bootcamp id not found, try again", 400));
   }
 
   res.status(201).json({
@@ -149,5 +151,56 @@ exports.getBootcampsInRadius = asyncWrapper(async (req, res, next) => {
     success: true,
     count: bootcamps.length,
     data: bootcamps,
+  });
+});
+
+//@desc Upload bootcamp photo
+//@route Update /api/v1/bootcamps/:id/photo
+//@access Private
+exports.uploadBootCampPhoto = asyncWrapper(async function (req, res, next) {
+  const bootCamp = await Bootcamp.findById(req.params.id);
+  if (!bootCamp) {
+    return next(new HandleError("Bootcamp id not found, try again", 400));
+  }
+
+  // if (!req.files) {
+  //   return next(new HandleError("Please upload a file", 400));
+  // }
+  // console.log(req.files);
+
+  // const file = req.files.file;
+
+  // if (!file.mimetype.startsWith("image")) {
+  //   return next(new HandleError("Please upload a valid image", 400));
+  // }
+
+  // if (file.size > process.MAX_IMAGE_SIZE) {
+  //   return next(
+  //     new HandleError(
+  //       `Image size should be less than ${process.MAX_IMAGE_SIZE}`,
+  //       400
+  //     )
+  //   );
+  // }
+
+  // file.name = `photo_${bootCamp._id}${path.parse(file.name).ext}`;
+  // file.mv(`${process.BOOTCAMP_FILE_PATH}/${file.name}`, async (err) => {
+  //   if (err) {
+  //     return next(new HandleError(`Problem with file upload `, 500));
+  //   }
+  //   await Bootcamp.findByIdAndUpdate(req.params.id, { photo: file.name });
+  //   res.status(200).json({
+  //     success: true,
+
+  //     data: file.name,
+  //   });
+  // });
+  // await Bootcamp.findByIdAndUpdate(req.params.id, { photo: file.name });
+
+  console.log(bootCamp, req.files);
+  res.status(200).json({
+    success: true,
+
+    data: req.files.file,
   });
 });

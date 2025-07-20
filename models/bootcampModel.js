@@ -104,17 +104,38 @@ const bootcampSchema = new mongoose.Schema(
     //   ref: "User",
     //   required: true,
     // },
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
-  // {
-  //   toJSON: { virtuals: true },
-  //   toObject: { virtuals: true },
-  // }
 );
 
 //create bootCamp slug from name
 
 bootcampSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+bootcampSchema.pre(/^find/, function (next) {
+  console.log(this);
+  this.populate({
+    path: "course",
+    select: "title description",
+  });
+  next();
+});
+
+bootcampSchema.virtual("course", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "bootcamp",
+  justOne: false,
+});
+
+bootcampSchema.pre("remove", async function (next) {
+  await this.model("Course").deleteMany({ bootcamp: this._id });
   next();
 });
 

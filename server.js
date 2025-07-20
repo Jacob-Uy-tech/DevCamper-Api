@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const colors = require("colors");
+
 dotenv.config({
   path: "./config/config.env",
 });
