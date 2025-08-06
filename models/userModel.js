@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -25,12 +26,12 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    minlength: 8,
+    minlength: 6,
     select: false,
   },
   confirmPassword: {
     type: String,
-    minlength: 8,
+    minlength: 6,
     required: [true, "Please confirm your password"],
     //This works only on create and save
     validate: {
@@ -65,7 +66,18 @@ userSchema.methods.sendToken = function () {
 
 //ComparePassword
 userSchema.methods.comparePassword = async function (inputPassword) {
-  return await bcrypt.compare(this.password, inputPassword);
+  return await bcrypt.compare(inputPassword, this.password);
+};
+
+userSchema.methods.generateResetPasswordToken = async function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 const User = mongoose.model("User", userSchema);
 module.exports = User;

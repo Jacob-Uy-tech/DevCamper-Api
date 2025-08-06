@@ -9,3 +9,12 @@ exports.getUsers = asyncWrapper(async function (req, res, next) {
     data: users,
   });
 });
+
+exports.getMe = asyncWrapper(async function (req, res, next) {
+  const user = await User.findById(req.user.id);
+
+  res.status(200).json({
+    status: "Success",
+    user,
+  });
+});

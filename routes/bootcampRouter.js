@@ -11,22 +11,24 @@ const {
 const { queryMidleware } = require("../middlewares/advancdQuery");
 const courseRouter = require("./courseRouter");
 const Bootcamp = require("../models/bootcampModel");
-const { protectedRoute } = require("../controllers/auth");
+const { protectedRoute, userRole } = require("./../controllers/auth");
 
 const router = express.Router();
 
 router.use("/:bootcampId/courses", courseRouter);
 router.route("/radius/:zipcode/:distance").get(getBootcampsInRadius);
-router.route("/:id/photo").patch(uploadBootCampPhoto);
+router
+  .route("/:id/photo")
+  .patch(protectedRoute, userRole("publisher", "admin"), uploadBootCampPhoto);
 
 router
   .route("/")
   .get(queryMidleware(Bootcamp, "course"), getAllBootCamps)
-  .post(createBootCamp);
+  .post(protectedRoute, userRole("publisher", "admin"), createBootCamp);
 router
   .route("/:id")
   .get(protectedRoute, getBootCamp)
-  .patch(UpdateBootCamp)
-  .delete(deleteBootCamp);
+  .patch(protectedRoute, userRole("publisher", "admin"), UpdateBootCamp)
+  .delete(protectedRoute, userRole("publisher", "admin"), deleteBootCamp);
 
 module.exports = router;

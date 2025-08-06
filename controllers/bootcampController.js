@@ -2,6 +2,7 @@ const path = require("path");
 const Bootcamp = require("../models/bootcampModel");
 const HandleError = require("./../Utilis/error");
 const asyncWrapper = require("../middlewares/asyncHandler");
+const { console } = require("inspector");
 // const { console } = require("inspector");
 
 //@desc Get all bootcamps
@@ -33,6 +34,14 @@ exports.getBootCamp = asyncWrapper(async function (req, res, next) {
 //@route Patch /api/v1/bootcamps/:id
 //@access Private
 exports.UpdateBootCamp = asyncWrapper(async function (req, res, next) {
+  const { id } = req.user;
+  const realUser = await Bootcamp.findById(req.params.id);
+
+  if (id !== realUser.user.toString() && req.user.role !== "admin") {
+    return next(
+      new HandleError("You don't have pemission to perform this task", 401)
+    );
+  }
   const UpdatedBootCamp = await Bootcamp.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -56,8 +65,15 @@ exports.UpdateBootCamp = asyncWrapper(async function (req, res, next) {
 //@route Post /api/v1/bootcamps
 //@access Private
 exports.createBootCamp = asyncWrapper(async function (req, res, next) {
-  if (!req.body) {
-    return next(new HandleError("Bootcamp not created, try again", 400));
+  req.body.user = req.user.id;
+  const publishedBootcamp = await Bootcamp.findOne({
+    user: req.user.id,
+  });
+
+  if (publishedBootcamp && req.user.role !== "admin") {
+    return next(
+      new HandleError(`${req.user.role} can only create one bootcamp`, 400)
+    );
   }
   const bootCamp = await Bootcamp.create(req.body);
   res.status(201).json({
@@ -70,6 +86,15 @@ exports.createBootCamp = asyncWrapper(async function (req, res, next) {
 //@route Delete /api/v1/bootcamps/:id
 //@access Private
 exports.deleteBootCamp = asyncWrapper(async function (req, res, next) {
+  const { id } = req.user;
+  const realUser = await Bootcamp.findById(req.params.id);
+
+  if (id !== realUser.user.toString() && req.user.role !== "admin") {
+    return next(
+      new HandleError("You don't have pemission to perform this task", 401)
+    );
+  }
+
   const bootCamp = await Bootcamp.findByIdAndDelete(req.params.id);
   if (!bootCamp) {
     return next(new HandleError("Bootcamp id not found, try again", 400));

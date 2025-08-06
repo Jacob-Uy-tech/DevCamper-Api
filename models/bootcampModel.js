@@ -99,11 +99,11 @@ const bootcampSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    // user: {
-    //   type: mongoose.Schema.ObjectId,
-    //   ref: "User",
-    //   required: true,
-    // },
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -119,7 +119,7 @@ bootcampSchema.pre("save", function (next) {
 });
 
 bootcampSchema.pre(/^find/, function (next) {
-  console.log(this);
+  // console.log(this);
   this.populate({
     path: "course",
     select: "title description",
