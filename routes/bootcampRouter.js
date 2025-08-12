@@ -10,12 +10,14 @@ const {
 } = require("./../controllers/bootcampController");
 const { queryMidleware } = require("../middlewares/advancdQuery");
 const courseRouter = require("./courseRouter");
+const reviewRouter = require("./reviewRouter");
 const Bootcamp = require("../models/bootcampModel");
 const { protectedRoute, userRole } = require("./../controllers/auth");
 
 const router = express.Router();
 
 router.use("/:bootcampId/courses", courseRouter);
+router.use("/:bootcampId/reviews", reviewRouter);
 router.route("/radius/:zipcode/:distance").get(getBootcampsInRadius);
 router
   .route("/:id/photo")

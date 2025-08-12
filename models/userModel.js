@@ -29,18 +29,18 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
-  confirmPassword: {
-    type: String,
-    minlength: 6,
-    required: [true, "Please confirm your password"],
-    //This works only on create and save
-    validate: {
-      validator: function (val) {
-        return val === this.password;
-      },
-      message: "Kindly confirm your password",
-    },
-  },
+  // confirmPassword: {
+  //   type: String,
+  //   minlength: 6,
+  //   required: [true, "Please confirm your password"],
+  //   //This works only on create and save
+  //   validate: {
+  //     validator: function (val) {
+  //       return val === this.password;
+  //     },
+  //     message: "Kindly confirm your password",
+  //   },
+  // },
 
   resetPasswordToken: String,
   resetPasswordExpire: Date,

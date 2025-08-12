@@ -5,12 +5,12 @@ const errorHandler = function (err, req, res, next) {
   let error;
   //   Mongoose bad id
   if (err.name === "CastError") {
-    const message = `Resourse id ${err.value} not found`;
+    const message = `Resource ${err.value} not found`;
     error = new HandleError(message, 404);
   }
   //   Mongoose bad id
   if (err.name === "Error") {
-    const message = `Resourse id not found`;
+    const message = `Resource id not found`;
     error = new HandleError(message, 404);
   }
   //Mongoose Duplicate key

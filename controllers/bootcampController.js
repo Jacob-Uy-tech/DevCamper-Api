@@ -2,8 +2,6 @@ const path = require("path");
 const Bootcamp = require("../models/bootcampModel");
 const HandleError = require("./../Utilis/error");
 const asyncWrapper = require("../middlewares/asyncHandler");
-const { console } = require("inspector");
-// const { console } = require("inspector");
 
 //@desc Get all bootcamps
 //@route Get /api/v1/bootcamps

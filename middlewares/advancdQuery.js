@@ -51,7 +51,7 @@ exports.queryMidleware = function (model, populateStr) {
 
     res.advancedQuery = {
       status: "Success",
-      count: model.length,
+      count: result.length,
       data: result,
       pagination,
     };

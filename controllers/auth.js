@@ -65,6 +65,8 @@ exports.protectedRoute = asyncWrapper(async function (req, res, next) {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.token) {
+    token = req.cookies.token;
   }
   if (!token) {
     return next(
@@ -153,4 +155,60 @@ exports.resetPassword = asyncWrapper(async function (req, res, next) {
   await user.save();
 
   sendTokenFn(user, 200, res);
+});
+
+exports.updatePassword = asyncWrapper(async function (req, res, next) {
+  const { curPassword, newPassword } = req.body;
+  const user = await User.findById(req.user.id).select("+password");
+  if (!user) {
+    return next(new HandleError("Invalid credential, please try again", 400));
+  }
+  const checkPassword = await user.comparePassword(curPassword);
+  console.log(checkPassword);
+  if (!checkPassword) {
+    return next(new HandleError("Invalid credential, please try again", 400));
+  }
+  user.password = newPassword;
+  await user.save();
+  sendTokenFn(user, 200, res);
+});
+
+exports.updateDetails = asyncWrapper(async function (req, res, next) {
+  const { email, name } = req.body;
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { email, name },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  res.status(200).json({
+    status: "Success",
+    data: user,
+  });
+});
+
+exports.getMe = asyncWrapper(async function (req, res, next) {
+  const user = await User.findById(req.user.id);
+
+  res.status(200).json({
+    status: "Success",
+    user,
+  });
+});
+
+exports.logout = asyncWrapper(async function (req, res, next) {
+  res.cookie("token", "none", {
+    httpOnly: true,
+    expires: new Date(Date.now() + 10 * 1000), // expires in 10 seconds
+    // secure: true, // Uncomment if using HTTPS
+    // sameSite: "Strict", // Match your original cookie settings
+  });
+
+  res.status(200).json({
+    status: "Success",
+    data: null,
+  });
 });

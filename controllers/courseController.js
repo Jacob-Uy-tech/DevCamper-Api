@@ -44,9 +44,18 @@ exports.getOneCourse = asyncWrapper(async function (req, res, next) {
 //@access private
 exports.createCourse = asyncWrapper(async function (req, res, next) {
   req.body.bootcamp = req.params.bootcampId;
+  req.body.user = req.user.id;
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
   if (!bootcamp) {
     return next(new HandleError("Bootcamp id not found", 404));
+  }
+  if (
+    bootcamp.user.id.toString() !== req.user.id &&
+    req.user.role !== "admin"
+  ) {
+    return next(
+      new HandleError("You don't have pemission to perform this task", 401)
+    );
   }
   const course = await Course.create(req.body);
 
@@ -62,6 +71,11 @@ exports.updateCourse = asyncWrapper(async function (req, res, next) {
   let course = await Course.findById(req.params.id);
   if (!course) {
     return next(new HandleError("Course id not found", 404));
+  }
+  if (course.user.id.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new HandleError("You don't have pemission to perform this task", 401)
+    );
   }
   course = await Course.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -80,6 +94,11 @@ exports.deleteCourse = asyncWrapper(async function (req, res, next) {
   const course = await Course.findById(req.params.id);
   if (!course) {
     return next(new HandleError("Course id not found", 404));
+  }
+  if (course.user.id.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new HandleError("You don't have pemission to perform this task", 401)
+    );
   }
   await Course.findByIdAndDelete(req.params.id);
 
